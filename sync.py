@@ -6,10 +6,13 @@ import stat
 import shutil
 import pathlib
 from urllib import parse
+from subprocess import Popen
 from concurrent.futures import ThreadPoolExecutor
 
+timeOut = 45 * 60
 syncBaseDir = "data/"
 cwd = os.getcwd()
+startTime = time.time()
 
 
 def getAbsPath(path):
@@ -53,28 +56,60 @@ def svncreate(name, path, url):
     return 1
 
 
+def run(cmd):  # 运行长时间任务，超时终止
+    t = time.time() - startTime
+    if t > timeOut:
+        return 10
+    p = Popen(cmd)
+    while p.poll() == None:
+        time.sleep(1)
+        if time.time() - startTime > timeOut:
+            # p.kill()
+            p.terminate()
+            print("...... 超时退出 >>", cmd)
+            return 15
+    return p.returncode
+
+    # t = timeOut - t
+    # print("...... 超时时间", t)
+    # p.wait(t)
+    # r = p.poll()
+    # if r == None:
+    #     p.kill()
+    #     print("...... 超时退出 >>", cmd)
+    #     return 15
+    # return r
+
+
 def svnsync(name, path, url):
     if svncreate(name, path, url) > 0:
         return 1
     print(">>", name, "开始同步")
     pathUrl = path2url(path)
-    status = os.system("svnsync sync " + pathUrl)
+    status = run("svnsync sync " + pathUrl)
+    if status >= 10:
+        return status
     if status > 0:
         os.system("svn propdel svn:sync-lock --revprop -r0 " + pathUrl)
         time.sleep(1)
-        status = os.system("svnsync sync " + pathUrl)
+        status = run("svnsync sync " + pathUrl)
     else:
         print("...", name, "同步成功")
     return 0
 
 
+# main
 dataset = pd.read_csv("svn.csv")
 svnRepos = dataset.iloc[:, :2].values
-executor = ThreadPoolExecutor(5)
+
+executor = ThreadPoolExecutor(4)
 for svnRepo in svnRepos:
     name = svnRepo[0].strip()
     if name.startswith("#"):
         continue
     path = getAbsPath(syncBaseDir + name)
     url = svnRepo[1].strip()
+    if time.time() - startTime > timeOut:
+        print("...... 超时退出 >>", name)
+        break
     executor.submit(svnsync, name, path, url)
