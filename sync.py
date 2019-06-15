@@ -35,7 +35,7 @@ def path2url(path):
 def svncreate(name, path, url):
     if os.path.exists(path):
         return -1
-    print(">>>> 创建镜像库 ", name)
+    print(">>", name, "创建镜像库")
     if not os.path.exists(syncBaseDir):
         os.makedirs(syncBaseDir)
     pathUrl = path2url(path)
@@ -47,7 +47,7 @@ def svncreate(name, path, url):
         p.chmod(0o777)
         status = os.system("svnsync init " + pathUrl + " " + url)
         if status == 0:
-            print(">> 创建成功", name)
+            print("...", name, "创建成功")
             return 0
     deletefile(path)
     return 1
@@ -56,7 +56,7 @@ def svncreate(name, path, url):
 def svnsync(name, path, url):
     if svncreate(name, path, url) > 0:
         return 1
-    print(">>>> 同步", name)
+    print(">>", name, "开始同步")
     pathUrl = path2url(path)
     status = os.system("svnsync sync " + pathUrl)
     if status > 0:
@@ -64,17 +64,17 @@ def svnsync(name, path, url):
         time.sleep(1)
         status = os.system("svnsync sync " + pathUrl)
     else:
-        print(">> 同步成功", name)
+        print("...", name, "同步成功")
     return 0
 
 
 dataset = pd.read_csv("svn.csv")
 svnRepos = dataset.iloc[:, :2].values
-with ThreadPoolExecutor(3) as executor:
-    for svnRepo in svnRepos:
-        name = svnRepo[0].strip()
-        if name.startswith("#"):
-            continue
-        path = getAbsPath(syncBaseDir + name)
-        url = svnRepo[1].strip()
-        executor.submit(svnsync, name, path, url)
+executor = ThreadPoolExecutor(5)
+for svnRepo in svnRepos:
+    name = svnRepo[0].strip()
+    if name.startswith("#"):
+        continue
+    path = getAbsPath(syncBaseDir + name)
+    url = svnRepo[1].strip()
+    executor.submit(svnsync, name, path, url)
