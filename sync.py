@@ -59,9 +59,11 @@ def svncreate(name, path, url):
 
 def run(cmd):  # 运行长时间任务，超时终止
     t = time.time() - startTime
+    print("...", "time", t)
     if t > timeOut:
         return 10
     p = Popen(cmd)
+    print("...", "poll", p.poll())
     while p.poll() == None:
         time.sleep(1)
         if time.time() - startTime > timeOut:
@@ -87,7 +89,9 @@ def svnsync(name, path, url):
         return 1
     print(">>", name, "开始同步")
     pathUrl = path2url(path)
+    print("...", name, pathUrl)
     status = run("svnsync sync " + pathUrl)
+    print("...", name, "异常", status)
     if status >= 10:
         print("...", name, "异常退出", status)
         return status
@@ -109,12 +113,14 @@ svnRepos = dataset.iloc[:, :2].values
 
 executor = ThreadPoolExecutor(4)
 for svnRepo in svnRepos:
-    name = svnRepo[0].strip()
-    if name.startswith("#"):
+    reponame = svnRepo[0].strip()
+    if reponame.startswith("#"):
         continue
-    path = getAbsPath(syncBaseDir + name)
+
+    path = getAbsPath(syncBaseDir + reponame)
     url = svnRepo[1].strip()
     if time.time() - startTime > timeOut:
-        print("...... 超时退出 >>", name)
+        print("...... 超时退出 >>", reponame)
         break
-    executor.submit(svnsync, name, path, url)
+
+    executor.submit(svnsync, reponame, path, url)
