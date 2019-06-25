@@ -1,4 +1,5 @@
-data/
+svnRepos/
+gitRepos/
 
 # Maven
 target/

@@ -10,7 +10,8 @@ from subprocess import Popen
 from concurrent.futures import ThreadPoolExecutor
 
 timeOut = 45 * 60
-syncBaseDir = "data/"
+syncBaseDir = "svnRepos/"
+gitBaseDir = "gitRepos/"
 cwd = os.getcwd()
 startTime = time.time()
 

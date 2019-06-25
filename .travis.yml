@@ -1,8 +1,11 @@
 language: python
 
+python: 3.7
+
 cache:
   directories:
-    - data
+    - svnRepos
+    - gitRepos
 
 script:
     - python sync.py
