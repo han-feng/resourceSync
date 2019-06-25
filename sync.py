@@ -59,8 +59,9 @@ def svncreate(name, path, url):
 
 def run(cmd):  # 运行长时间任务，超时终止
     t = time.time() - startTime
-    print("...", "time", t)
+    print("...", t, cmd)
     if t > timeOut:
+        print("...... 超时退出 >>", t, cmd)
         return 10
     p = Popen(cmd)
     print("...", "poll", p.poll())
@@ -69,7 +70,7 @@ def run(cmd):  # 运行长时间任务，超时终止
         if time.time() - startTime > timeOut:
             # p.kill()
             p.terminate()
-            print("...... 超时退出 >>", cmd)
+            print("...... 超时退出 >>", t, cmd)
             return 15
     return p.returncode
 
@@ -89,16 +90,15 @@ def svnsync(name, path, url):
         return 1
     print(">>", name, "开始同步")
     pathUrl = path2url(path)
-    print("...", name, pathUrl)
-    status = run("svnsync sync " + pathUrl)
-    print("...", name, "异常", status)
+    status = run(["svnsync", "sync", pathUrl])
+    print("...", name, "status", status)
     if status >= 10:
         print("...", name, "异常退出", status)
         return status
     if status > 0:
         os.system("svn propdel svn:sync-lock --revprop -r0 " + pathUrl)
         time.sleep(1)
-        status = run("svnsync sync " + pathUrl)
+        status = run(["svnsync", "sync", pathUrl])
         if status > 0:
             print("...", name, "异常退出", status)
             return status
