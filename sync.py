@@ -89,13 +89,17 @@ def svnsync(name, path, url):
     pathUrl = path2url(path)
     status = run("svnsync sync " + pathUrl)
     if status >= 10:
+        print("...", name, "异常退出", status)
         return status
     if status > 0:
         os.system("svn propdel svn:sync-lock --revprop -r0 " + pathUrl)
         time.sleep(1)
         status = run("svnsync sync " + pathUrl)
-    else:
-        print("...", name, "同步成功")
+        if status > 0:
+            print("...", name, "异常退出", status)
+            return status
+
+    print("...", name, "同步成功")
     return 0
 
 
