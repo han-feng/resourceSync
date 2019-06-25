@@ -36,6 +36,22 @@ def path2url(path):
     return sr
 
 
+def run(cmd):  # 运行长时间任务，超时终止
+    t = time.time() - startTime
+    print("...", t, cmd)
+    if t > timeOut:
+        print("...... 超时退出 >>", t, cmd)
+        return 10
+    p = Popen(cmd)
+    while p.poll() == None:
+        if time.time() - startTime > timeOut:
+            p.terminate()
+            print("...... 超时退出 >>", t, cmd)
+            return 15
+        time.sleep(1)
+    return p.returncode
+
+
 def svncreate(name, path, url):
     if os.path.exists(path):
         return -1
@@ -57,37 +73,11 @@ def svncreate(name, path, url):
     return 1
 
 
-def run(cmd):  # 运行长时间任务，超时终止
-    t = time.time() - startTime
-    print("...", t, cmd)
-    if t > timeOut:
-        print("...... 超时退出 >>", t, cmd)
-        return 10
-    p = Popen(cmd)
-    print("...", "poll", p.poll())
-    while p.poll() == None:
-        time.sleep(1)
-        if time.time() - startTime > timeOut:
-            # p.kill()
-            p.terminate()
-            print("...... 超时退出 >>", t, cmd)
-            return 15
-    return p.returncode
-
-    # t = timeOut - t
-    # print("...... 超时时间", t)
-    # p.wait(t)
-    # r = p.poll()
-    # if r == None:
-    #     p.kill()
-    #     print("...... 超时退出 >>", cmd)
-    #     return 15
-    # return r
-
-
 def svnsync(name, path, url):
-    if svncreate(name, path, url) > 0:
-        return 1
+    status = svncreate(name, path, url)
+    if status > 0:
+        print("...", name, "建库失败", status)
+        return status
     print(">>", name, "开始同步")
     pathUrl = path2url(path)
     status = run(["svnsync", "sync", pathUrl])
@@ -107,20 +97,21 @@ def svnsync(name, path, url):
     return 0
 
 
+def svn(executor):
+    dataset = pd.read_csv("svn.csv")
+    svnRepos = dataset.iloc[:, :2].values
+    for svnRepo in svnRepos:
+        reponame = svnRepo[0].strip()
+        if reponame.startswith("#"):
+            continue
+        path = getAbsPath(syncBaseDir + reponame)
+        url = svnRepo[1].strip()
+        if time.time() - startTime > timeOut:
+            print("...... 超时退出 >>", reponame)
+            break
+        executor.submit(svnsync, reponame, path, url)
+
+
 # main
-dataset = pd.read_csv("svn.csv")
-svnRepos = dataset.iloc[:, :2].values
-
 executor = ThreadPoolExecutor(4)
-for svnRepo in svnRepos:
-    reponame = svnRepo[0].strip()
-    if reponame.startswith("#"):
-        continue
-
-    path = getAbsPath(syncBaseDir + reponame)
-    url = svnRepo[1].strip()
-    if time.time() - startTime > timeOut:
-        print("...... 超时退出 >>", reponame)
-        break
-
-    executor.submit(svnsync, reponame, path, url)
+svn(executor)
