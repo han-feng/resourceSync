@@ -38,7 +38,7 @@ def path2url(path):
 
 def run(cmd):  # 运行长时间任务，超时终止
     t = time.time() - startTime
-    print("...", t, cmd)
+    # print("...", t, cmd)
     if t > timeOut:
         print("...... 超时退出 >>", t, cmd)
         return 10
@@ -81,7 +81,7 @@ def svnsync(name, path, url):
     print(">>", name, "开始同步")
     pathUrl = path2url(path)
     status = run(["svnsync", "sync", pathUrl])
-    print("...", name, "status", status)
+    # print("...", name, "status", status)
     if status >= 10:
         print("...", name, "异常退出", status)
         return status
