@@ -10,7 +10,7 @@ from subprocess import Popen
 from concurrent.futures import ThreadPoolExecutor
 
 timeOut = 45 * 60
-syncBaseDir = "svnRepos/"
+svnBaseDir = "svnRepos/"
 gitBaseDir = "gitRepos/"
 cwd = os.getcwd()
 startTime = time.time()
@@ -56,10 +56,10 @@ def svncreate(name, path, url):
     if os.path.exists(path):
         return -1
     print(">>", name, "创建镜像库")
-    if not os.path.exists(syncBaseDir):
-        os.makedirs(syncBaseDir)
+    if not os.path.exists(svnBaseDir):
+        os.makedirs(svnBaseDir)
     pathUrl = path2url(path)
-    status = os.system("svnadmin create " + syncBaseDir + name)
+    status = os.system("svnadmin create " + svnBaseDir + name)
     if status == 0:
         pathlib.Path(path, "hooks", "pre-revprop-change.bat").touch()
         p = pathlib.Path(path, "hooks", "pre-revprop-change")
@@ -104,7 +104,7 @@ def svn(executor):
         reponame = svnRepo[0].strip()
         if reponame.startswith("#"):
             continue
-        path = getAbsPath(syncBaseDir + reponame)
+        path = getAbsPath(svnBaseDir + reponame)
         url = svnRepo[1].strip()
         if time.time() - startTime > timeOut:
             print("...... 超时退出 >>", reponame)
@@ -112,6 +112,50 @@ def svn(executor):
         executor.submit(svnsync, reponame, path, url)
 
 
+def gitcreate(name, path, url):
+    if os.path.exists(path):
+        return -1
+    print(">>", name, "创建镜像库")
+    status = os.system("git clone --mirror " + url + " " + path)
+    if status == 0:
+        print("...", name, "创建成功")
+    else:
+        deletefile(path)
+        print("...", name, "创建失败")
+    return status
+
+
+def gitsync(name, path, url):
+    status = gitcreate(name, path, url)
+    if status > 0:
+        print("...", name, "建库失败", status)
+        return status
+    print(">>", name, "开始同步")
+    status = run(["git", "--git-dir=" + path, "remote", "update"])
+    if status > 0:
+        print("...", name, "异常退出", status)
+        return status
+    print("...", name, "同步成功")
+    return 0
+
+
+def git(executor):
+    dataset = pd.read_csv("git.csv")
+    gitRepos = dataset.iloc[:, :2].values
+    for gitRepo in gitRepos:
+        reponame = gitRepo[0].strip()
+        if reponame.startswith("#"):
+            continue
+        path = gitBaseDir + reponame + ".git"
+        url = gitRepo[1].strip()
+        if time.time() - startTime > timeOut:
+            print("...... 超时退出 >>", reponame)
+            break
+        executor.submit(gitsync, reponame, path, url)
+
+
 # main
 executor = ThreadPoolExecutor(4)
+
 svn(executor)
+git(executor)
