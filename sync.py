@@ -155,7 +155,7 @@ def git(executor):
 
 
 # main
-executor = ThreadPoolExecutor(4)
+executor = ThreadPoolExecutor(8)
 
 svn(executor)
 git(executor)
