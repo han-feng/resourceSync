@@ -1,6 +1,6 @@
 name,url
 struts1,http://svn.apache.org/repos/asf/struts/struts1/
-avro,http://svn.apache.org/repos/asf/avro/
+#avro,http://svn.apache.org/repos/asf/avro/
 #tomcat,http://svn.apache.org/repos/asf/tomcat
 #activemq,http://svn.apache.org/repos/asf/activemq/
 #camel,http://svn.apache.org/repos/asf/camel/
