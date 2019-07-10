@@ -9,7 +9,7 @@ from urllib import parse
 from subprocess import Popen
 from concurrent.futures import ThreadPoolExecutor
 
-timeOut = 45 * 60
+timeOut = 40 * 60
 svnBaseDir = "svnRepos/"
 gitBaseDir = "gitRepos/"
 cwd = os.getcwd()
