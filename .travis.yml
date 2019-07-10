@@ -4,9 +4,9 @@ python: 3.7
 
 cache:
   pip: true
-  directories:
-    - svnRepos
-    - gitRepos
+  # directories:
+  #  - svnRepos
+  #  - gitRepos
 
 script:
     - python sync.py
