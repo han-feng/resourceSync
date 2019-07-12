@@ -38,7 +38,7 @@ if len(sys.argv) >= 3:
     start = int(ss)-1
 else:
     id = 33054
-    start = 645
+    start = 644
 
 baseUrl = "http://www.ouoou.com"
 indexUrl = baseUrl + "/ou_%d/" % id
@@ -79,7 +79,7 @@ with open(txtFilePath, "w", encoding='utf-8') as file:
 
 # 压缩输出文件
 with zipfile.ZipFile(zipFilePath, "w") as f:
-    f.write(txtFilePath, fileName + ".txt", compress_type=zipfile.ZIP_LZMA)
+    f.write(txtFilePath, fileName + ".txt", compress_type=zipfile.ZIP_DEFLATED)
 
 # 更新索引文件
 indexJsonFile = cacheDir + "index.json"
@@ -108,7 +108,9 @@ links += "  </ul>"
 lines = '''
 <html>
 <head>
-  <title></title>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width,minimum-scale=1.0,maximum-scale=1.0,user-scalable=no"/>
 </head>
 <body>
 %s
