@@ -1,13 +1,15 @@
 #!/usr/bin/python
+# python 3.7
 import os
 import time
-import pandas as pd
 import stat
 import shutil
 import pathlib
 from urllib import parse
 from subprocess import Popen
 from concurrent.futures import ThreadPoolExecutor
+# requirements: pandas
+import pandas as pd
 
 timeOut = 5 * 60
 svnBaseDir = "svnRepos/"

@@ -4,9 +4,18 @@ python: 3.7
 
 cache:
   pip: true
-  # directories:
+  directories:
+   - ouoou/cache
   #  - svnRepos
   #  - gitRepos
 
 script:
-    - python sync.py
+  - python ouoouDownload.py $OUOOU_DADAO_ID $OUOOU_DADAO_START
+  - python sync.py
+
+deploy:
+  provider: pages
+  local-dir: ouoou
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  keep-history: true

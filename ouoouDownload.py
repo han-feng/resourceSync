@@ -1,0 +1,116 @@
+#!/usr/bin/python
+# python 3.7
+# OU中文网小说下载工具
+# 命令行参数说明：
+#   参数一：小说编号中的数字部分
+#   参数二：从1开始的整数，第几篇文
+
+import os
+import sys
+import json
+import zipfile
+# requirements: requests bs4 lxml
+import requests
+from bs4 import BeautifulSoup
+
+
+def get_text(srcUrl):
+    # 获取文章内容
+    strhtml = requests.get(srcUrl)
+    soup = BeautifulSoup(strhtml.text, 'lxml')
+    content = soup.select("#wrapper>div.box_con>div.bookname>h1")[0].get_text().strip()
+    content += "\n\n"
+    content += soup.select("#content")[0].get_text()
+    return content
+
+
+def make_dirs(dirPath):
+    if not os.path.exists(dirPath):
+        os.makedirs(dirPath)
+
+
+if len(sys.argv) >= 2:
+    id = int(sys.argv[0])
+    start = int(sys.argv[1])-1
+else:
+    id = 33054
+    start = 645
+
+baseUrl = "http://www.ouoou.com"
+indexUrl = baseUrl + "/ou_%d/" % id
+strhtml = requests.get(indexUrl)
+
+soup = BeautifulSoup(strhtml.text, 'lxml')
+title = soup.select("#info>h1")[0].get_text().strip()
+data = soup.select("#list>dl>dd>a")
+total = len(data)
+print("备份《%s》（ou_%d）：共%d篇，从第%d篇开始" % (title, id, total, start+1))
+
+baseOutDir = "ouoou/"
+outDir = "%s%d/" % (baseOutDir, id)
+cacheDir = baseOutDir + "cache/"
+
+make_dirs(outDir)
+make_dirs(cacheDir)
+
+fileIndexSet = set()
+fileName = "%d-%d" % (start, total)
+fileIndexSet.add("%d/%s" % (id, fileName))
+txtFilePath = outDir + fileName + ".txt"
+zipFilePath = outDir + fileName + ".zip"
+
+# 新建输出文件
+with open(txtFilePath, "w", encoding='utf-8') as file:
+    for item in data[start:]:
+        result = {
+            'title': item.get("title"),
+            # 'text': item.get_text(),
+            'link': baseUrl + item.get("href")
+        }
+        url = baseUrl + item.get("href")
+        text = get_text(url)
+        file.write("\n")
+        file.write(text)
+        file.write("\n")
+
+# 压缩输出文件
+with zipfile.ZipFile(zipFilePath, "w") as f:
+    f.write(txtFilePath, fileName + ".txt", compress_type=zipfile.ZIP_LZMA)
+
+# 更新索引文件
+indexJsonFile = cacheDir + "index.json"
+indexHtmlFile = baseOutDir + "index.html"
+if os.path.exists(indexJsonFile):
+    try:
+        with open(indexJsonFile, "r", encoding='utf-8') as f:
+            data = set(json.load(f))
+    except:
+        data = set()
+else:
+    data = set()
+
+data = list(data | fileIndexSet)
+with open(indexJsonFile, "w", encoding='utf-8') as f:
+    json.dump(data, f)
+
+links = "  <ul>\n"
+for item in data:
+    txt = item + ".txt"
+    links += '    <li><a href="%s">%s</a></li>\n' % (txt, txt)
+    zip = item + ".zip"
+    links += '    <li><a href="%s">%s</a></li>\n' % (zip, zip)
+links += "  </ul>"
+
+lines = '''
+<html>
+<head>
+  <title></title>
+</head>
+<body>
+%s
+</body>
+</html>
+''' % links
+
+with open(indexHtmlFile, "w", encoding='utf-8') as f:
+    f.write(lines)
