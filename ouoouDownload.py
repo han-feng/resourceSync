@@ -36,6 +36,8 @@ if len(sys.argv) >= 3:
     print("ouoouDownload '%s' '%s'" % (sid, ss))
     id = int(sid)
     start = int(ss)-1
+    if start < 0:
+        start = 0
 else:
     id = 33054
     start = 644
