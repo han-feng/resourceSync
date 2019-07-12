@@ -18,7 +18,8 @@ def get_text(srcUrl):
     # 获取文章内容
     strhtml = requests.get(srcUrl)
     soup = BeautifulSoup(strhtml.text, 'lxml')
-    content = soup.select("#wrapper>div.box_con>div.bookname>h1")[0].get_text().strip()
+    content = soup.select("#wrapper>div.box_con>div.bookname>h1")[
+        0].get_text().strip()
     content += "\n\n"
     content += soup.select("#content")[0].get_text()
     return content
@@ -29,9 +30,12 @@ def make_dirs(dirPath):
         os.makedirs(dirPath)
 
 
-if len(sys.argv) >= 2:
-    id = int(sys.argv[0])
-    start = int(sys.argv[1])-1
+if len(sys.argv) >= 3:
+    sid = sys.argv[1]
+    ss = sys.argv[2]
+    print("ouoouDownload '%s' '%s'" % (sid, ss))
+    id = int(sid)
+    start = int(ss)-1
 else:
     id = 33054
     start = 645
