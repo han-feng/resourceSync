@@ -5,7 +5,7 @@ python: 3.7
 cache:
   pip: true
   directories:
-    - ouoou/cache
+    - ouoou
     #- svnRepos
     #- gitRepos
 
