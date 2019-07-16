@@ -40,7 +40,7 @@ if len(sys.argv) >= 3:
         start = 0
 else:
     id = 33054
-    start = 644
+    start = 649
 
 baseUrl = "http://www.ouoou.com"
 indexUrl = baseUrl + "/ou_%d/" % id
@@ -60,7 +60,7 @@ make_dirs(outDir)
 make_dirs(cacheDir)
 
 fileIndexSet = set()
-fileName = "%d-%d" % (start, total)
+fileName = "%s%d+" % (title, start+1)
 fileIndexSet.add("%d/%s" % (id, fileName))
 txtFilePath = outDir + fileName + ".txt"
 zipFilePath = outDir + fileName + ".zip"
