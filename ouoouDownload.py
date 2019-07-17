@@ -7,6 +7,7 @@
 
 import os
 import sys
+import time
 import json
 import zipfile
 # requirements: requests bs4 lxml
@@ -59,9 +60,11 @@ cacheDir = baseOutDir + "cache/"
 make_dirs(outDir)
 make_dirs(cacheDir)
 
-fileIndexSet = set()
+fileIndex = {}
 fileName = "%s%d+" % (title, start+1)
-fileIndexSet.add("%d/%s" % (id, fileName))
+fileId = "%d-%d" % (id, start+1)
+fileIndex[fileId] = {"parent": id, "fileName": fileName,
+                     "createTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
 txtFilePath = outDir + fileName + ".txt"
 zipFilePath = outDir + fileName + ".zip"
 
@@ -89,22 +92,23 @@ indexHtmlFile = baseOutDir + "index.html"
 if os.path.exists(indexJsonFile):
     try:
         with open(indexJsonFile, "r", encoding='utf-8') as f:
-            data = set(json.load(f))
+            data = json.load(f)
     except:
-        data = set()
+        data = {}
 else:
-    data = set()
+    data = {}
 
-data = list(data | fileIndexSet)
+data.update(fileIndex)
 with open(indexJsonFile, "w", encoding='utf-8') as f:
     json.dump(data, f)
 
 links = "  <ul>\n"
-for item in data:
-    txt = item + ".txt"
-    links += '    <li><a href="%s">%s</a></li>\n' % (txt, txt)
-    zip = item + ".zip"
-    links += '    <li><a href="%s">%s</a></li>\n' % (zip, zip)
+for item in data.values():
+    t = item["createTime"]
+    txt = item["fileName"] + ".txt"
+    links += '    <li><a href="%s">%s (%s)</a></li>\n' % (txt, txt, t)
+    zip = item["fileName"] + ".zip"
+    links += '    <li><a href="%s">%s (%s)</a></li>\n' % (zip, zip, t)
 links += "  </ul>"
 
 lines = '''
