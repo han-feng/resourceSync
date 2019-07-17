@@ -63,7 +63,7 @@ make_dirs(cacheDir)
 fileIndex = {}
 fileName = "%s%d+" % (title, start+1)
 fileId = "%d-%d" % (id, start+1)
-fileIndex[fileId] = {"parent": id, "fileName": fileName,
+fileIndex[fileId] = {"parent": str(id), "fileName": fileName,
                      "createTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
 txtFilePath = outDir + fileName + ".txt"
 zipFilePath = outDir + fileName + ".zip"
@@ -106,9 +106,10 @@ links = "  <ul>\n"
 for item in data.values():
     t = item["createTime"]
     txt = item["fileName"] + ".txt"
-    links += '    <li><a href="%s">%s (%s)</a></li>\n' % (txt, txt, t)
+    dir = item["parent"] + "/"
+    links += '    <li><a href="%s%s">%s (%s)</a></li>\n' % (dir, txt, txt, t)
     zip = item["fileName"] + ".zip"
-    links += '    <li><a href="%s">%s (%s)</a></li>\n' % (zip, zip, t)
+    links += '    <li><a href="%s%s">%s (%s)</a></li>\n' % (dir, zip, zip, t)
 links += "  </ul>"
 
 lines = '''
