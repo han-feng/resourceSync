@@ -7,9 +7,10 @@
 
 import os
 import sys
-import time
 import json
 import zipfile
+from datetime import datetime
+import pytz
 # requirements: requests bs4 lxml
 import requests
 from bs4 import BeautifulSoup
@@ -43,9 +44,6 @@ else:
     id = 33054
     start = 649
 
-os.environ['TZ'] = 'CST'
-time.tzset()
-
 baseUrl = "http://www.ouoou.com"
 indexUrl = baseUrl + "/ou_%d/" % id
 strhtml = requests.get(indexUrl)
@@ -67,7 +65,7 @@ fileIndex = {}
 fileName = "%s%d" % (title, start+1)
 fileId = "%d-%d" % (id, start+1)
 fileIndex[fileId] = {"parent": str(id), "fileName": fileName,
-                     "createTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
+                     "createTime": datetime.now(pytz.timezone("Asia/Shanghai")).strftime("%Y-%m-%d %H:%M:%S")}
 txtFilePath = outDir + fileName + ".txt"
 zipFilePath = outDir + fileName + ".zip"
 
