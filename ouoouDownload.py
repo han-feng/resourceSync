@@ -43,6 +43,9 @@ else:
     id = 33054
     start = 649
 
+os.environ['TZ'] = 'CST'
+time.tzset()
+
 baseUrl = "http://www.ouoou.com"
 indexUrl = baseUrl + "/ou_%d/" % id
 strhtml = requests.get(indexUrl)
@@ -61,7 +64,7 @@ make_dirs(outDir)
 make_dirs(cacheDir)
 
 fileIndex = {}
-fileName = "%s%d+" % (title, start+1)
+fileName = "%s%d" % (title, start+1)
 fileId = "%d-%d" % (id, start+1)
 fileIndex[fileId] = {"parent": str(id), "fileName": fileName,
                      "createTime": time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())}
