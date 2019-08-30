@@ -3,7 +3,7 @@ language: python
 python: 3.7
 
 cache:
-  pip: true
+  # pip: true
   directories:
     - ouoou
     #- svnRepos
