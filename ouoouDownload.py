@@ -42,7 +42,7 @@ if len(sys.argv) >= 3:
         start = 0
 else:
     id = 33054
-    start = 649
+    start = 764
 
 baseUrl = "http://www.ouoou.com"
 indexUrl = baseUrl + "/ou_%d/" % id
